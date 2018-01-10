@@ -18,7 +18,9 @@ void Layer::render(NVGcontext *c) {
 		if( layer->isVisible ) {
 			nvgSave(c);
 			nvgTranslate(c, layer->position.x, layer->position.y);
+			nvgTranslate(c, layer->anchor.x, layer->anchor.y);
 			nvgRotate(c, layer->rotation);
+			nvgTranslate(c, -layer->anchor.x, -layer->anchor.y);
 			nvgScale(c, layer->scale.x, layer->scale.y);
 			layer->render(c);
 			nvgRestore(c);

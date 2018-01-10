@@ -25,6 +25,7 @@ struct Layer {
 	bool isUpdatable = false;
 	bool isInteractable = false;
 	glm::vec2 position;
+	glm::vec2 anchor;
 	glm::vec2 scale = glm::vec2(1,1);
 	float rotation = 0.0f;
 	Scene* scene = nullptr;
