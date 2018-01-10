@@ -16,6 +16,8 @@ Scene* Scene::instance = nullptr;
 Scene::Scene() : Layer() {
 	instance = this;
 
+	updateTransform();
+
 	mouseButtons.resize(GLFW_MOUSE_BUTTON_LAST+1);
 	for( auto i = 0; i <= GLFW_MOUSE_BUTTON_LAST; i++ ) {
 		mouseButtons[i] = ButtonStateUp;

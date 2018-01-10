@@ -28,6 +28,7 @@ struct Layer {
 	glm::vec2 anchor;
 	glm::vec2 scale = glm::vec2(1,1);
 	float rotation = 0.0f;
+	float transform[6];
 	Scene* scene = nullptr;
 	Layer* parent = nullptr;
 	std::vector<Layer*> sublayers;
@@ -46,6 +47,8 @@ struct Layer {
 	void addLayer(Layer& layer);
 	void removeLayer(Layer& layer);
 	void removeFromParent();
+
+	void updateTransform();
 
 	glm::vec2 localToScene(glm::vec2 point);
 	glm::vec2 sceneToLocal(glm::vec2 point);
