@@ -33,12 +33,12 @@ int main() {
 
 	TestLayer test(nvgRGB(255,128,0));
 	scene.addLayer(test);
-	nvgTransformRotate(test.transform, 0.1f);
+	test.position = { 200, 200 };
+	test.rotation = 0.3f;
 
 	TestLayer test2(nvgRGB(0,128,255));
 	test.addLayer(test2);
-	nvgTransformTranslate(test2.transform, 20, 20);
-
+	test2.position = glm::vec2(50,50);
 
 	while( !glfwWindowShouldClose(window) ) {
 		scene.processEvents(window);

@@ -6,10 +6,6 @@
 #include "Layer.h"
 #include "Scene.h"
 
-Layer::Layer() {
-	nvgTransformIdentity(transform);
-}
-
 void Layer::update(double dt) {
 	for( auto& layer : sublayers ) {
 		if( layer->isUpdatable )
@@ -21,8 +17,9 @@ void Layer::render(NVGcontext *c) {
 	for( auto& layer : sublayers ) {
 		if( layer->isVisible ) {
 			nvgSave(c);
-			auto& t = layer->transform;
-			nvgTransform(c, t[0], t[1], t[2], t[3], t[4], t[5]);
+			nvgTranslate(c, layer->position.x, layer->position.y);
+			nvgRotate(c, layer->rotation);
+			nvgScale(c, layer->scale.x, layer->scale.y);
 			layer->render(c);
 			nvgRestore(c);
 		}

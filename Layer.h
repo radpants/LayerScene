@@ -24,7 +24,9 @@ struct Layer {
 	bool isVisible = true;
 	bool isUpdatable = false;
 	bool isInteractable = false;
-	float transform[6];
+	glm::vec2 position;
+	glm::vec2 scale = glm::vec2(1,1);
+	float rotation = 0.0f;
 	Scene* scene = nullptr;
 	Layer* parent = nullptr;
 	std::vector<Layer*> sublayers;
@@ -34,7 +36,7 @@ struct Layer {
 	std::function<void(void)> onMouseExit = nullptr;
 	std::function<void(void)> onClick = nullptr;
 
-	Layer();
+	Layer() = default;
 
 	virtual void update(double dt);
 	virtual void render(NVGcontext* c);
