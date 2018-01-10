@@ -61,10 +61,12 @@ bool Layer::operator==(const Layer &other) const {
 	return this == &other;
 }
 
+// TODO: This should translate a local point to the global scene (window) coordinates
 glm::vec2 Layer::localToScene(glm::vec2 point) {
 	return point;
 }
 
+// TODO: This should translate from global (window) coordinates to local coordinates
 glm::vec2 Layer::sceneToLocal(glm::vec2 point) {
 	return point;
 }

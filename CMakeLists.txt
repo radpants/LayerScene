@@ -3,6 +3,16 @@ project(LayerScene)
 
 set(CMAKE_CXX_STANDARD 11)
 
+if(UNIX)
+    include_directories(/usr/local/include)
+    include_directories(./external)
+    include_directories(~/Repositories/external/tweeny/include)
+    link_directories(/usr/local/lib)
+    link_libraries(glfw)
+    link_libraries("-framework OpenGL")
+endif(UNIX)
+
+
 if(WIN32)
     include_directories(./external)
     include_directories(C:/DevelopmentLibraries/glfw-3.2.1.bin.WIN32/include)
