@@ -21,24 +21,30 @@ struct Rect {
 };
 
 struct Layer {
-	bool isVisible = true;
-	bool isUpdatable = false;
 	bool isInteractable = false;
-	float transform[6];
+	glm::vec2 position;
+	glm::vec2 scale = glm::vec2(1,1);
+	float rotation = 0.0f;
 	Scene* scene = nullptr;
 	Layer* parent = nullptr;
-	std::vector<Layer*> sublayers;
+	std::vector<Layer> sublayers;
 	Rect bounds = {0,0,0,0};
+	void* data = nullptr;
 
 	std::function<void(void)> onMouseOver = nullptr;
 	std::function<void(void)> onMouseExit = nullptr;
 	std::function<void(void)> onClick = nullptr;
 
-	Layer();
+	std::function<void(Layer*,double)> onUpdate = nullptr;
+	std::function<void(Layer*,NVGcontext*)> onDraw = nullptr;
+	std::function<bool(Layer*,glm::f64vec2)> doesOverlap = nullptr;
 
-	virtual void update(double dt);
-	virtual void render(NVGcontext* c);
-	virtual bool overlapsPoint(glm::vec2 point);
+	Layer() = default;
+	virtual ~Layer() = default;
+
+	void update(double dt);
+	void render(NVGcontext* c);
+	bool overlapsPoint(glm::vec2 point);
 
 	void addLayer(Layer& layer);
 	void removeLayer(Layer& layer);

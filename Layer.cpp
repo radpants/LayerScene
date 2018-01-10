@@ -6,29 +6,29 @@
 #include "Layer.h"
 #include "Scene.h"
 
-Layer::Layer() {
-	nvgTransformIdentity(transform);
-}
 
 void Layer::update(double dt) {
 	for( auto& layer : sublayers ) {
-		if( layer->isUpdatable )
-			layer->update(dt);
+		if( layer.onUpdate != nullptr )
+			layer.onUpdate(&layer,dt);
 	}
 }
 
 void Layer::render(NVGcontext *c) {
 	for( auto& layer : sublayers ) {
-		if( layer->isVisible ) {
+		if( layer.onDraw != nullptr ) {
 			nvgSave(c);
-			auto& t = layer->transform;
-			nvgTransform(c, t[0], t[1], t[2], t[3], t[4], t[5]);
-			layer->render(c);
+			nvgTranslate(c, position.x, position.y);
+			nvgRotate(c, rotation);
+			nvgScale(c, scale.x, scale.y);
+			layer.onDraw(&layer,c);
+			layer.render(c);
 			nvgRestore(c);
 		}
 	}
 }
 
+// TODO: This should use the lambda provided by doesOverlap
 bool Layer::overlapsPoint(glm::vec2 point) {
 	auto p = sceneToLocal(point);
 	return bounds.containsPoint(p);
@@ -42,11 +42,11 @@ void Layer::addLayer(Layer &layer) {
 		layer.scene = scene;
 
 	layer.parent = this;
-	sublayers.push_back(&layer);
+	sublayers.push_back(layer);
 }
 
 void Layer::removeLayer(Layer &layer) {
-	auto result = std::find(sublayers.begin(), sublayers.end(), &layer);
+	auto result = std::find(sublayers.begin(), sublayers.end(), layer);
 	if( result != sublayers.end() ) {
 		sublayers.erase(result);
 	}

@@ -6,23 +6,28 @@
 #include "Layer.h"
 
 
-struct TestLayer : public Layer {
-	NVGcolor color;
-
-	TestLayer(NVGcolor _color) : Layer(), color(_color) {
-		bounds = {0,0,200,200};
-	}
-
-	void render(NVGcontext* c) override {
-		nvgBeginPath(c);
-		nvgFillColor(c, color);
-		nvgRect(c, bounds.x, bounds.y, bounds.w, bounds.h);
-		nvgFill(c);
-
-		Layer::render(c);
-	}
+struct BoxData {
+	NVGcolor color = nvgRGB(255,0,0);
 };
 
+struct Box {
+	Layer layer;
+	NVGcolor color;
+
+	Box() {
+		color = nvgRGB(255,128,0);
+		layer.onDraw = [&](Layer* l, NVGcontext* c) {
+			nvgBeginPath(c);
+			nvgFillColor(c, color);
+			nvgRect(c, 0, 0, 200, 200);
+			nvgFill(c);
+		};
+
+		layer.onUpdate = [](Layer* l, double dt) {
+			l->rotation += dt;
+		};
+	}
+};
 
 int main() {
 	GLFWwindow* window = nullptr;
@@ -31,18 +36,16 @@ int main() {
 	Scene scene;
 	scene.initGraphics(&window, &nvg);
 
-	TestLayer test(nvgRGB(255,128,0));
-	scene.addLayer(test);
-	nvgTransformRotate(test.transform, 0.1f);
+	Box box;
+	scene.addLayer(box.layer);
 
-	TestLayer test2(nvgRGB(0,128,255));
-	test.addLayer(test2);
-	nvgTransformTranslate(test2.transform, 20, 20);
-
-
+	double frameTime = 0.0f;
+	double startTime = glfwGetTime();
 	while( !glfwWindowShouldClose(window) ) {
+		frameTime = glfwGetTime() - startTime;
+		startTime = glfwGetTime();
 		scene.processEvents(window);
-		scene.update(0);
+		scene.update(frameTime);
 		scene.render(window, nvg);
 
 		glfwSwapBuffers(window);
