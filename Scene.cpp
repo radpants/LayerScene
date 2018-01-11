@@ -18,6 +18,9 @@ Scene::Scene() : Layer() {
 
 	updateTransform();
 
+	mouseTarget = nullptr;
+	mouseDownTarget = nullptr;
+
 	mouseButtons.resize(GLFW_MOUSE_BUTTON_LAST+1);
 	for( auto i = 0; i <= GLFW_MOUSE_BUTTON_LAST; i++ ) {
 		mouseButtons[i] = ButtonStateUp;
@@ -71,9 +74,34 @@ void Scene::processEvents(GLFWwindow *window) {
 	glfwPollEvents();
 	previousMousePosition = mousePosition;
 	glfwGetCursorPos(window, &mousePosition[0], &mousePosition[1]);
+
+	for( int i = GLFW_MOUSE_BUTTON_1; i <= GLFW_MOUSE_BUTTON_LAST; i++ ) {
+		auto state = glfwGetMouseButton(window, i);
+		if( mouseButtons[i] == ButtonStateUp && state == GLFW_PRESS ) {
+			mouseButtons[i] = ButtonStatePressed;
+		}
+		else if( mouseButtons[i] == ButtonStateDown && state == GLFW_RELEASE ) {
+			mouseButtons[i] = ButtonStateReleased;
+		}
+		else
+			mouseButtons[i] = (state == GLFW_PRESS) ? ButtonStateDown : ButtonStateUp;
+	}
+
+	// NOTE: Keyboard key-codes are not contigous, so this will assign a lot of non-existent keys to 'UP'
+	for( int i = 0; i <= GLFW_KEY_LAST; i++ ) {
+		switch(keys[i]) {
+			case static_cast<ButtonState>(GLFW_PRESS): { keys[i] = ButtonStatePressed; break; }
+			case static_cast<ButtonState>(GLFW_RELEASE): { keys[i] = ButtonStateReleased; break; }
+			case ButtonStatePressed: { keys[i] = ButtonStateDown; break; }
+			case ButtonStateReleased: { keys[i] = ButtonStateUp; break; }
+			default: {}
+		}
+	}
+
 }
 
 void Scene::update(double dt) {
+	mouseTarget = nullptr;
 	Layer::update(dt);
 
 	// Because we don't get an update if there is no scroll but we need to stop scrolling

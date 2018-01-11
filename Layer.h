@@ -24,6 +24,8 @@ struct Layer {
 	bool isVisible = true;
 	bool isUpdatable = false;
 	bool isInteractable = false;
+	uint16_t depth = 0;
+	uint16_t index = 0;
 	glm::vec2 position;
 	glm::vec2 anchor;
 	glm::vec2 scale = glm::vec2(1,1);
@@ -43,6 +45,8 @@ struct Layer {
 	virtual void update(double dt);
 	virtual void render(NVGcontext* c);
 	virtual bool overlapsPoint(glm::vec2 point);
+
+	void processInteraction();
 
 	void addLayer(Layer& layer);
 	void removeLayer(Layer& layer);

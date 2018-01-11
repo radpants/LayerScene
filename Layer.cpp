@@ -7,9 +7,55 @@
 #include "Scene.h"
 
 void Layer::update(double dt) {
-	for( auto& layer : sublayers ) {
-		if( layer->isUpdatable )
-			layer->update(dt);
+
+	for( int i = sublayers.size()-1; i >= 0; i-- ) {
+		if( sublayers[i]->isUpdatable || sublayers[i]->isInteractable )
+			sublayers[i]->update(dt);
+	}
+
+	if( isInteractable )
+		processInteraction();
+
+}
+
+void Layer::processInteraction() {
+	if( scene->mouseTarget == nullptr || scene->mouseTarget == this ) {
+		auto isOver = overlapsPoint(sceneToLocal(scene->mousePosition));
+		auto& buttonState = scene->mouseButtons[GLFW_MOUSE_BUTTON_LEFT];
+
+		if( isOver ) {
+
+			if( scene->mouseTarget == nullptr || scene->mouseTarget == this ) {
+				scene->mouseTarget = this;
+			}
+
+
+			// are we starting a click?
+			if( buttonState == ButtonStatePressed ) {
+				if( scene->mouseTarget == this ) {
+					scene->mouseDownTarget = this;
+				}
+			}
+				// are we ending a click?
+			else if( buttonState == ButtonStateReleased ) {
+				if( scene->mouseDownTarget == this ) {
+					if( onClick ) onClick();
+					scene->mouseDownTarget = nullptr;
+				}
+			}
+		}
+		else {
+			if( scene->mouseTarget == this ) {
+				scene->mouseTarget = nullptr;
+			}
+
+			if( buttonState == ButtonStateReleased ) {
+				if( scene->mouseDownTarget == this ) {
+					scene->mouseDownTarget = nullptr;
+				}
+			}
+
+		}
 	}
 }
 
@@ -27,8 +73,7 @@ void Layer::render(NVGcontext *c) {
 }
 
 bool Layer::overlapsPoint(glm::vec2 point) {
-	auto p = sceneToLocal(point);
-	return bounds.containsPoint(p);
+	return bounds.containsPoint(point);
 }
 
 void Layer::addLayer(Layer &layer) {
@@ -37,6 +82,9 @@ void Layer::addLayer(Layer &layer) {
 
 	if( layer.scene == nullptr )
 		layer.scene = scene;
+
+	layer.depth = static_cast<uint16_t>(depth + 1);
+	layer.index = static_cast<uint16_t>(sublayers.size());
 
 	layer.parent = this;
 	sublayers.push_back(&layer);
@@ -128,5 +176,6 @@ glm::vec2 Layer::sceneToLocal(glm::vec2 point) {
 
 	return p;
 }
+
 
 

@@ -5,35 +5,81 @@
 #include "Scene.h"
 #include "Layer.h"
 
+struct Box {
+	NVGcolor color;
+	glm::ivec2 position;
+};
 
-struct TestLayer : public Layer {
-	NVGcolor color{};
+struct Data {
+	static Data* instance;
 
-	TestLayer() : Layer(), color(nvgRGB(255,255,255)){
-		bounds = {0,0,200,200};
-		isUpdatable = true;
-		anchor = { 100, 100 };
+	std::vector<Box> boxes;
+	void generateBoxes() {
+		for( int y = 0; y < 10; y++ ) {
+			for( int x = 0; x < 10; x++ ) {
+				Box box = { .color = nvgRGB(0,128,255), .position = glm::ivec2(x,y) };
+				boxes.push_back(box);
+			}
+		}
 	}
+};
 
-	explicit TestLayer(NVGcolor _color) : color(_color) {
-		bounds = {0,0,200,200};
+Data* Data::instance = new Data();
+
+struct BoxLayer : public Layer {
+	Box* box = nullptr;
+
+	BoxLayer() {
+		int size = 20 + rand() % 20;
+		bounds = {0,0,size,size};
 		isUpdatable = true;
-		anchor = { 100, 100 };
-	}
+		isInteractable = true;
 
-	void render(NVGcontext* c) override {
-		auto paint = nvgLinearGradient(c,0,0,0,bounds.h,nvgRGBA(0,0,0,0),color);
-		nvgBeginPath(c);
-		nvgFillPaint(c, paint);
-		nvgRect(c, bounds.x, bounds.y, bounds.w, bounds.h);
-		nvgFill(c);
-
-		Layer::render(c);
+		onClick = [&]() {
+			bounds = {0,0,100,100};
+		};
 	}
 
 	void update(double dt) override {
-		rotation += dt * 0.1f;
 		Layer::update(dt);
+		position.x = box->position.x * 30.0f;
+		position.y = box->position.y * 30.0f;
+
+		auto isHovered = (this == scene->mouseTarget);
+		auto isActive = (this == scene->mouseDownTarget);
+
+		box->color = isHovered ? nvgRGB(0,128,255) : nvgRGB(255,128,0);
+		if( isActive )
+			box->color = nvgRGB(255,255,0);
+	}
+
+	void render(NVGcontext* c) override {
+		nvgBeginPath(c);
+		nvgStrokeColor(c, nvgRGBA(0,0,0,128));
+		nvgFillColor(c, box->color);
+		nvgRect(c,0,0,bounds.w,bounds.h);
+		nvgStroke(c);
+		nvgFill(c);
+		Layer::render(c);
+	}
+};
+
+
+struct TestLayer : public Layer {
+	TestLayer() {
+		bounds = {0,0,200,200};
+		isInteractable = true;
+	}
+
+	void render(NVGcontext* c) override {
+		auto isHovered = (this == scene->mouseTarget);
+		auto color = isHovered ? nvgRGB(0,128,255) : nvgRGB(255,128,0);
+		auto paint = nvgLinearGradient(c, 0, 0, 0, bounds.h, nvgRGBA(0,0,0,0), color);
+		nvgBeginPath(c);
+		nvgFillPaint(c, paint);
+		nvgRect(c,0,0,bounds.w,bounds.h);
+		nvgFill(c);
+		Layer::render(c);
 	}
 };
 
@@ -45,35 +91,26 @@ int main() {
 	Scene scene;
 	scene.initGraphics(&window, &nvg);
 
-	TestLayer test(nvgRGB(255,128,0));
-	scene.addLayer(test);
-	test.position = { 500, 200 };
+	auto& data = Data::instance;
 
-	TestLayer test2(nvgRGB(0,128,255));
-	test.addLayer(test2);
-	test2.position = glm::vec2(50,50);
+	data->generateBoxes();
 
-	constexpr int count = 10;
-	TestLayer* layers = new TestLayer[count];
-	for( int i = 0; i < count; i++ ) {
-		auto t = static_cast<float>(i) / static_cast<float>(count) * 3.14159f * 2.0f;
-		auto& l = layers[i];
-		float radius = 100.0f + static_cast<float>(rand() % 1000) / 1000.0f * 150.0f;
-		l.color = nvgRGBf(t/7.0f,0,1.0f-(t/7.0f));
-		l.bounds = {0,0,25,25};
-		l.position.x = radius * cosf(t);
-		l.position.y = radius * sinf(t);
-		test.addLayer(l);
+	const uint32_t count = data->boxes.size();
+	std::vector<BoxLayer> boxLayers(count);
+	for( int i = 0; i < data->boxes.size(); i++ ) {
+		boxLayers[i].box = &data->boxes[i];
+		scene.addLayer(boxLayers[i]);
 	}
 
-	TestLayer x(nvgRGB(255,255,0));
-	x.bounds = {0,0,90,90};
-	x.isUpdatable = false;
-	scene.addLayer(x);
+	TestLayer testLayer;
+	testLayer.position = {100,100};
+	scene.addLayer(testLayer);
 
-	TestLayer test3(nvgRGB(255,0,0));
-	test3.position = {100, 300};
-	test2.addLayer(test3);
+	TestLayer test2;
+//	test2.bounds = {50,50};
+	test2.position = {45,20};
+	testLayer.addLayer(test2);
+
 
 	double startTime = glfwGetTime();
 	double frameTime = 0.0f;
@@ -83,15 +120,6 @@ int main() {
 		scene.processEvents(window);
 		scene.update(frameTime);
 		scene.render(window, nvg);
-
-		x.position = test2.localToScene(glm::vec2(-45,-45));
-
-		if( test2.bounds.containsPoint(test2.sceneToLocal(scene.mousePosition)) ) {
-			test2.color = nvgRGB(255,255,0);
-		}
-		else {
-			test2.color = nvgRGB(0,128,255);
-		}
 
 		glfwSwapBuffers(window);
 	}
