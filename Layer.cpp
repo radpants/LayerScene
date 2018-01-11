@@ -19,6 +19,9 @@ void Layer::update(double dt) {
 }
 
 void Layer::processInteraction() {
+	if( scene == nullptr )
+		return;
+
 	if( scene->mouseTarget == nullptr || scene->mouseTarget == this ) {
 		auto isOver = overlapsPoint(sceneToLocal(scene->mousePosition));
 		auto& buttonState = scene->mouseButtons[GLFW_MOUSE_BUTTON_LEFT];
@@ -82,9 +85,6 @@ void Layer::addLayer(Layer &layer) {
 
 	if( layer.scene == nullptr )
 		layer.scene = scene;
-
-	layer.depth = static_cast<uint16_t>(depth + 1);
-	layer.index = static_cast<uint16_t>(sublayers.size());
 
 	layer.parent = this;
 	sublayers.push_back(&layer);
@@ -175,6 +175,12 @@ glm::vec2 Layer::sceneToLocal(glm::vec2 point) {
 	nvgTransformPoint(&p[0], &p[1], t, p.x, p.y);
 
 	return p;
+}
+
+void Layer::setScene(Scene *scene) {
+	this->scene = scene;
+	for( auto& layer : sublayers ) { layer->setScene(scene); }
+	wasAddedToScene();
 }
 
 

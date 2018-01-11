@@ -24,8 +24,6 @@ struct Layer {
 	bool isVisible = true;
 	bool isUpdatable = false;
 	bool isInteractable = false;
-	uint16_t depth = 0;
-	uint16_t index = 0;
 	glm::vec2 position;
 	glm::vec2 anchor;
 	glm::vec2 scale = glm::vec2(1,1);
@@ -36,8 +34,6 @@ struct Layer {
 	std::vector<Layer*> sublayers;
 	Rect bounds = {0,0,0,0};
 
-	std::function<void(void)> onMouseOver = nullptr;
-	std::function<void(void)> onMouseExit = nullptr;
 	std::function<void(void)> onClick = nullptr;
 
 	Layer() = default;
@@ -45,6 +41,7 @@ struct Layer {
 	virtual void update(double dt);
 	virtual void render(NVGcontext* c);
 	virtual bool overlapsPoint(glm::vec2 point);
+	virtual void wasAddedToScene() {}
 
 	void processInteraction();
 
@@ -53,6 +50,7 @@ struct Layer {
 	void removeFromParent();
 
 	void updateTransform();
+	void setScene(Scene* scene);
 
 	glm::vec2 localToScene(glm::vec2 point);
 	glm::vec2 sceneToLocal(glm::vec2 point);

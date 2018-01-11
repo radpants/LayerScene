@@ -63,7 +63,6 @@ void Scene::initGraphics(GLFWwindow** window, NVGcontext** c) {
 		exit(EXIT_FAILURE);
 	}
 
-	int windowSize[2], framebufferSize[2];
 	glfwGetWindowSize(*window, &windowSize[0], &windowSize[1]);
 	glfwGetFramebufferSize(*window, &framebufferSize[0], &framebufferSize[1]);
 
@@ -130,6 +129,7 @@ void Scene::render(GLFWwindow* window, NVGcontext *c) {
 void Scene::addLayer(Layer &layer) {
 	layer.scene = this;
 	Layer::addLayer(layer);
+	layer.setScene(this);
 }
 
 
