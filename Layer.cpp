@@ -34,13 +34,13 @@ void Layer::processInteraction() {
 
 
 			// are we starting a click?
-			if( buttonState == ButtonStatePressed ) {
-				if( scene->mouseTarget == this ) {
+			if( scene->mouseDownTarget == nullptr ) {
+				if( buttonState == ButtonStatePressed ) {
 					scene->mouseDownTarget = this;
 				}
 			}
 				// are we ending a click?
-			else if( buttonState == ButtonStateReleased ) {
+			else if( buttonState == ButtonStateReleased || buttonState == ButtonStateUp ) {
 				if( scene->mouseDownTarget == this ) {
 					if( onClick ) onClick();
 					scene->mouseDownTarget = nullptr;

@@ -17,12 +17,18 @@ struct Screen : public Layer {
 
 	void render(NVGcontext* c) override {
 		if( scene ) {
-			bounds = {0,0,scene->windowSize.x,scene->windowSize.y};
+			bounds = {0,0,(float)scene->windowSize.x,(float)scene->windowSize.y};
 		}
 		auto paint = nvgLinearGradient(c, 0, 0, bounds.w, bounds.h, color1, color2);
 		nvgBeginPath(c);
 		nvgFillPaint(c, paint);
 		nvgRect(c,0,0,bounds.w,bounds.h);
+		nvgFill(c);
+
+		auto color = (scene->mouseDownTarget == this) ? nvgRGB(0,255,0) : nvgRGB(255,0,0);
+		nvgBeginPath(c);
+		nvgFillColor(c, color);
+		nvgRect(c,20,20,20,20);
 		nvgFill(c);
 		Layer::render(c);
 	}

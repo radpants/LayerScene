@@ -55,6 +55,8 @@ void Scene::initGraphics(GLFWwindow** window, NVGcontext** c) {
 
 	glfwSetScrollCallback(*window, glfwScrollCallback);
 
+	glfwSetInputMode(*window, GLFW_STICKY_MOUSE_BUTTONS, GLFW_TRUE);
+
 	glfwSwapInterval(1);
 	glfwSetWindowAspectRatio(*window, 16, 9);
 
