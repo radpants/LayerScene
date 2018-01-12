@@ -42,6 +42,7 @@ struct Layer {
 	virtual void render(NVGcontext* c) {}
 	virtual bool overlapsPoint(glm::vec2 point);
 	virtual void wasAddedToScene() {}
+	virtual void willExitScene() {}
 
 	void updateSublayers(double dt);
 	void renderSublayers(NVGcontext* c);

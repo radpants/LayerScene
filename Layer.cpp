@@ -8,7 +8,7 @@
 
 void Layer::updateSublayers(double dt) {
 	for( int i = sublayers.size()-1; i >= 0; i-- ) {
-		if( sublayers[i]->isUpdatable || sublayers[i]->isInteractable )
+		if( sublayers[i]->scene && (sublayers[i]->isUpdatable || sublayers[i]->isInteractable) )
 			sublayers[i]->update(dt);
 			sublayers[i]->updateSublayers(dt);
 	}
@@ -57,14 +57,13 @@ void Layer::processInteraction() {
 					scene->mouseDownTarget = nullptr;
 				}
 			}
-
 		}
 	}
 }
 
 void Layer::renderSublayers(NVGcontext* c) {
 	for( auto& layer : sublayers ) {
-		if( layer->isVisible ) {
+		if( layer->isVisible && layer->scene ) {
 			layer->updateTransform();
 			auto& t = layer->transform;
 			nvgSave(c);

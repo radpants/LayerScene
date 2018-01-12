@@ -1,7 +1,6 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <tweeny.h>
-#include <tween.h>
 
 #include "Scene.h"
 #include "Layer.h"
@@ -20,19 +19,17 @@ struct Screen : public Layer {
 	}
 
 	void wasAddedToScene() override {
+		animIn.forward();
 		animIn.seek(0.0f);
 	}
 
 	void update(double dt) override {
 		auto ms = static_cast<uint32_t>(dt*1000.0);
 		animIn.step(ms);
+		bounds = {0,0,(float)scene->windowSize.x,(float)scene->windowSize.y};
 	}
 
 	void render(NVGcontext* c) override {
-		if( scene ) {
-			bounds = {0,0,(float)scene->windowSize.x,(float)scene->windowSize.y};
-		}
-
 		nvgGlobalAlpha(c, animIn.peek());
 
 		auto paint = nvgLinearGradient(c, 0, 0, bounds.w, bounds.h, color1, color2);

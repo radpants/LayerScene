@@ -110,6 +110,7 @@ void Scene::update(double dt) {
 	mouseScroll.y = 0;
 
 	for( auto& layer : layersToRemove ) {
+		layer->willExitScene();
 		layer->parent = nullptr;
 		layer->scene = nullptr;
 	}
