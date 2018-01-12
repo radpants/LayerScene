@@ -29,6 +29,7 @@ struct Scene : public Layer {
 	std::vector<ButtonState> keys;
 	glm::ivec2 windowSize;
 	glm::ivec2 framebufferSize;
+	std::vector<Layer*> layersToRemove;
 
 	static Scene* instance;
 

@@ -6,17 +6,18 @@
 #include "Layer.h"
 #include "Scene.h"
 
-void Layer::update(double dt) {
-
+void Layer::updateSublayers(double dt) {
 	for( int i = sublayers.size()-1; i >= 0; i-- ) {
 		if( sublayers[i]->isUpdatable || sublayers[i]->isInteractable )
 			sublayers[i]->update(dt);
+			sublayers[i]->updateSublayers(dt);
 	}
 
 	if( isInteractable )
 		processInteraction();
-
 }
+
+
 
 void Layer::processInteraction() {
 	if( scene == nullptr )
@@ -31,7 +32,6 @@ void Layer::processInteraction() {
 			if( scene->mouseTarget == nullptr || scene->mouseTarget == this ) {
 				scene->mouseTarget = this;
 			}
-
 
 			// are we starting a click?
 			if( scene->mouseDownTarget == nullptr ) {
@@ -62,7 +62,7 @@ void Layer::processInteraction() {
 	}
 }
 
-void Layer::render(NVGcontext *c) {
+void Layer::renderSublayers(NVGcontext* c) {
 	for( auto& layer : sublayers ) {
 		if( layer->isVisible ) {
 			layer->updateTransform();
@@ -70,6 +70,7 @@ void Layer::render(NVGcontext *c) {
 			nvgSave(c);
 			nvgTransform(c, t[0], t[1], t[2], t[3], t[4], t[5]);
 			layer->render(c);
+			layer->renderSublayers(c);
 			nvgRestore(c);
 		}
 	}
@@ -83,8 +84,8 @@ void Layer::addLayer(Layer &layer) {
 	if( layer.parent )
 		layer.removeFromParent();
 
-	if( layer.scene == nullptr )
-		layer.scene = scene;
+	if( scene != nullptr )
+		layer.setScene(scene);
 
 	layer.parent = this;
 	sublayers.push_back(&layer);
@@ -93,8 +94,13 @@ void Layer::addLayer(Layer &layer) {
 void Layer::removeLayer(Layer &layer) {
 	auto result = std::find(sublayers.begin(), sublayers.end(), &layer);
 	if( result != sublayers.end() ) {
+		layer.scene->layersToRemove.push_back(&layer);
 		sublayers.erase(result);
 	}
+}
+
+void Layer::removeAllLayers() {
+	sublayers.clear();
 }
 
 void Layer::removeFromParent() {
@@ -182,6 +188,7 @@ void Layer::setScene(Scene *scene) {
 	for( auto& layer : sublayers ) { layer->setScene(scene); }
 	wasAddedToScene();
 }
+
 
 
 

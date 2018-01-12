@@ -38,14 +38,18 @@ struct Layer {
 
 	Layer() = default;
 
-	virtual void update(double dt);
-	virtual void render(NVGcontext* c);
+	virtual void update(double dt) {}
+	virtual void render(NVGcontext* c) {}
 	virtual bool overlapsPoint(glm::vec2 point);
 	virtual void wasAddedToScene() {}
+
+	void updateSublayers(double dt);
+	void renderSublayers(NVGcontext* c);
 
 	void processInteraction();
 
 	void addLayer(Layer& layer);
+	void removeAllLayers();
 	void removeLayer(Layer& layer);
 	void removeFromParent();
 

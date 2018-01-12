@@ -1,6 +1,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
-
+#include <tweeny.h>
+#include <tween.h>
 
 #include "Scene.h"
 #include "Layer.h"
@@ -10,15 +11,30 @@ struct Screen : public Layer {
 
 	NVGcolor color1 = nvgRGB(0,0,0);
 	NVGcolor color2 = nvgRGB(80,80,80);
+	tweeny::tween<float> animIn;
 
 	Screen() {
 		isInteractable = true;
+		isUpdatable = true;
+		animIn = tweeny::from(0.0f).to(1.0f).during(500).via(tweeny::easing::quadraticIn);
+	}
+
+	void wasAddedToScene() override {
+		animIn.seek(0.0f);
+	}
+
+	void update(double dt) override {
+		auto ms = static_cast<uint32_t>(dt*1000.0);
+		animIn.step(ms);
 	}
 
 	void render(NVGcontext* c) override {
 		if( scene ) {
 			bounds = {0,0,(float)scene->windowSize.x,(float)scene->windowSize.y};
 		}
+
+		nvgGlobalAlpha(c, animIn.peek());
+
 		auto paint = nvgLinearGradient(c, 0, 0, bounds.w, bounds.h, color1, color2);
 		nvgBeginPath(c);
 		nvgFillPaint(c, paint);
@@ -30,11 +46,10 @@ struct Screen : public Layer {
 		nvgFillColor(c, color);
 		nvgRect(c,20,20,20,20);
 		nvgFill(c);
-		Layer::render(c);
 	}
 };
 
-struct RootScreen : public Screen {
+struct RootScreen : public Layer {
 	Screen a;
 	Screen b;
 
@@ -43,22 +58,17 @@ struct RootScreen : public Screen {
 		b.color2 = nvgRGB(40,80,160);
 
 		a.onClick = [&]() {
-			removeLayer(a);
 			addLayer(b);
+			removeLayer(a);
 		};
 
 		b.onClick = [&]() {
-			removeLayer(b);
 			addLayer(a);
+			removeLayer(b);
 		};
 
 		addLayer(a);
 	}
-
-	void render(NVGcontext* c) override {
-		Layer::render(c);
-	}
-
 };
 
 int main() {

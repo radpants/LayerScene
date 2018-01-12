@@ -103,11 +103,17 @@ void Scene::processEvents(GLFWwindow *window) {
 
 void Scene::update(double dt) {
 	mouseTarget = nullptr;
-	Layer::update(dt);
+	Layer::updateSublayers(dt);
 
 	// Because we don't get an update if there is no scroll but we need to stop scrolling
 	mouseScroll.x = 0;
 	mouseScroll.y = 0;
+
+	for( auto& layer : layersToRemove ) {
+		layer->parent = nullptr;
+		layer->scene = nullptr;
+	}
+	layersToRemove.clear();
 }
 
 void Scene::render(GLFWwindow* window, NVGcontext *c) {
@@ -124,12 +130,11 @@ void Scene::render(GLFWwindow* window, NVGcontext *c) {
 
 
 	nvgBeginFrame(c, windowSize[0], windowSize[1], pixelRatio);
-	Layer::render(c);
+	Layer::renderSublayers(c);
 	nvgEndFrame(c);
 }
 
 void Scene::addLayer(Layer &layer) {
-	layer.scene = this;
 	Layer::addLayer(layer);
 	layer.setScene(this);
 }
